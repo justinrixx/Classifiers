@@ -59,7 +59,7 @@ def main(argv):
 
     # load from a file instead if that's the correct approach
     else:
-        csv = np.genfromtxt(filename, delimiter=",")
+        csv = np.genfromtxt(filename, delimiter=",", dtype=str)
         numcols = len(csv[0])
         data = csv[:, :numcols - 1]  # the first columns are the data
         targets = csv[:, numcols - 1]  # the last column is the targets
