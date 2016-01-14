@@ -1,8 +1,9 @@
 import sys
 import time  # for a random seed
 import numpy as np
-from hcClassifier import HcClassifier  # the classifier
-from sklearn import datasets           # the dataset
+from sklearn import datasets
+from hcClassifier import HcClassifier
+from knnClassifier import KnnClassifier
 
 
 def main(argv):
@@ -17,7 +18,7 @@ def main(argv):
     #   used for training
     #
     # 2. first argument is the filename of
-    #   the file containing the iris data set
+    #   the file containing the data set
     tpercent = .7
     filename = ""
 
@@ -39,18 +40,11 @@ def main(argv):
         while tpercent >= 1.0:
             tpercent -= 1.0
 
-
-    # prediction size = 1 - tpercent
-    ppercent = 1.0 - tpercent
-
     # get the time for use as a random seed
     #   this can be replaced by something else,
     #   but using the time will allow for a
     #   different shuffle each time
     seed = int(time.time())
-
-    data = 0
-    targets = 0
 
     if filename == "":
         iris = datasets.load_iris()
@@ -59,7 +53,7 @@ def main(argv):
 
     # load from a file instead if that's the correct approach
     else:
-        csv = np.genfromtxt(filename, delimiter=",", dtype=str)
+        csv = np.genfromtxt(filename, delimiter=",")
         numcols = len(csv[0])
         data = csv[:, :numcols - 1]  # the first columns are the data
         targets = csv[:, numcols - 1]  # the last column is the targets
@@ -85,7 +79,7 @@ def main(argv):
     ptargets = targets[tsize:tsize + psize]
 
     # train the classifier
-    classifier = HcClassifier()
+    classifier = KnnClassifier(2)
     classifier.train(tdata, ttargets)
 
     # see how it did
@@ -102,5 +96,3 @@ def main(argv):
 #   this file is run, not just loaded
 if __name__ == "__main__":
     main(sys.argv)
-
-
