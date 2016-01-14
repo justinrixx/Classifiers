@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import datasets
 from hcClassifier import HcClassifier
 from knnClassifier import KnnClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def main(argv):
@@ -79,13 +80,15 @@ def main(argv):
     ptargets = targets[tsize:tsize + psize]
 
     # train the classifier
-    classifier = KnnClassifier(2)
-    classifier.train(tdata, ttargets)
+    classifier = KnnClassifier(3)
+    #classifier = KNeighborsClassifier(n_neighbors=3)
+    classifier.fit(tdata, ttargets)
 
     # see how it did
     numcorrect = 0
+    predictions = classifier.predict(pdata)
     for i in range(psize):
-        if classifier.predict(pdata[i]) == ptargets[i]:
+        if predictions[i] == ptargets[i]:
             numcorrect += 1
 
     percentcorrect = (numcorrect / psize) * 100.0
