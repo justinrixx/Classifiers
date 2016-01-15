@@ -77,10 +77,6 @@ class KnnClassifier:
             # check k neighbors
             for i in range(min(self.k, len(closest))):
                 neighbors.append(self.targets[closest[i]])
-                #for j, k in enumerate(closest):
-                #    if k == i:
-                #        neighbors.append(self.targets[j])
-                #        continue
 
             toreturn.append(most_common(neighbors))
 
