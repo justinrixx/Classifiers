@@ -44,7 +44,7 @@ class KnnClassifier:
 
         # scale all the data using z-scores
         for i in range(len(self.data[0])):
-            # save the standard deviation and mean
+            # save the standard deviation and meancol = self.data[:, i]
             self.std_devs.append(np.std(self.data[:, i]))
             self.means.append(np.mean(self.data[:, i]))
 
@@ -61,11 +61,16 @@ class KnnClassifier:
             # store the distances
             distances = []
 
+            # scale the data
+            for i, val in enumerate(guess):
+                guess[i] -= self.means[i]
+                guess[i] /= self.std_devs[i]
+
             for instance in self.data:
                 distances.append(euclidean_distance(instance, guess))
 
             # find the closest ones
-            closest = np.argsort(distances, axis=0)
+            closest = np.argsort(distances)
 
             neighbors = []
 
