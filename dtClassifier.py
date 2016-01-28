@@ -29,7 +29,7 @@ def calculate_information_gain(s, f):
     """
 
     # make sure we're looking at a valid column
-    if f >= s.shape()[1]:
+    if f >= len(s[0]):
         return 0
 
     loss = 0
@@ -44,7 +44,7 @@ def calculate_information_gain(s, f):
     for value in values:
 
         # get the sublist that has value for the feature at column f
-        s_f = [x for x in s and x[f] == value]
+        s_f = [x for x in s if x[f] == value]
 
         # get the frequency of each target
         frequencies = {}
@@ -64,7 +64,7 @@ def calculate_information_gain(s, f):
         # get the entropy
         entropy_s_f = calculate_entropy(frequencies)
 
-        loss += (len(s_f) / s.shape()[0]) * entropy_s_f
+        loss -= (len(s_f) / len(s)) * entropy_s_f
 
     return loss
 
@@ -77,6 +77,12 @@ def get_all_classes(data, feature):
 
 
 def build_tree(data, features):
+
+    # check for empty data
+    if len(data) == 0:
+        # guess the first class
+        return 0
+
     # check if all the targets are the same
     targets = data[-1]
     test = np.full_like(targets, targets[0])
@@ -95,31 +101,35 @@ def build_tree(data, features):
 
     # calculate the information gain (or rather loss)
     else:
+        # create a new node
+        node = ID3_Node()
+
         losses = np.zeros(len(features))
         for feature in range(len(features)):
             losses[feature] = calculate_information_gain(data, feature)
 
         # go with the smallest
         i_smallest = np.argmin(losses)
-        all_values = set(data[:, i_smallest])  # get all possible values of this feature
+        vals = [x[features[i_smallest]] for x in data]
+        all_values = set(vals)  # get all possible values of this feature
 
-        tree = {features[i_smallest] : {}}
+        node.attr_index = features[i_smallest]
 
         # get the data and recurse
         for value in all_values:
             # get the parameters ready to pass down
-            new_data = [x for x in data if x[i_smallest] == value]
+            new_data = [x for x in data if x[features[i_smallest]] == value]
             new_features = copy.deepcopy(features)
-            new_features.remove(i_smallest)
+            new_features.remove(features[i_smallest])
 
             # recurse down the subtree
             subtree = build_tree(new_data, new_features)
 
             # once done, add the subtree into the main tree
-            tree[features[i_smallest]][value] = subtree
+            node.branches[value] = subtree
 
         # return once the subtrees are all in
-        return tree
+        return node
 
 
 class DTreeClassifier:
@@ -128,7 +138,7 @@ class DTreeClassifier:
     def __init__(self):
         self.data = ""
         self.targets = ""
-        self.tree = ""
+        self.root = ""
 
     def fit(self, data, targets):
         self.train(data, targets)
@@ -138,13 +148,15 @@ class DTreeClassifier:
         self.targets = targets
 
         # zip the data and targets together
-        datatargets = np.concatenate((data, targets), axis=1)
+        targets = targets.reshape((-1, 1))
+
+        datatargets = np.append(data, targets, axis=1)
+
         features = []
         for i in range(self.data.shape[1]):
             features.append(i)
 
-        self.tree = build_tree(datatargets, features)
-
+        self.root = build_tree(datatargets, features)
 
     def predict(self, data):
 
@@ -152,6 +164,30 @@ class DTreeClassifier:
 
         for instance in data:
 
-            var = 5
+            toreturn.append(self.traverse_tree(instance, self.root))
 
         return toreturn
+
+    def traverse_tree(self, instance, node):
+
+        # check for a node vs a leaf
+        if instance[node.attr_index] not in node.branches.keys():
+            return 0
+
+        branch = node.branches[instance[node.attr_index]]
+
+        # see if more nodes exist or else it's a leaf
+        if isinstance(branch, ID3_Node):
+            return self.traverse_tree(instance, branch)
+        else:
+            return node.branches[instance[node.attr_index]]
+
+
+class ID3_Node:
+    """
+    This class is really just a struct to hold information
+    about a node in a decision tree.
+    """
+    def __init__(self):
+        self.attr_index = 0
+        self.branches = {}
