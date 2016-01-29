@@ -10,7 +10,7 @@ def calculate_entropy(probabilities):
     """
     to_return = 0
 
-    for probability in probabilities:
+    for probability in probabilities.values():
         if probability != 0:
             to_return += -probability * np.log2(probability);
 
@@ -64,16 +64,9 @@ def calculate_information_gain(s, f):
         # get the entropy
         entropy_s_f = calculate_entropy(frequencies)
 
-        loss -= (len(s_f) / len(s)) * entropy_s_f
+        loss += (len(s_f) / len(s)) * entropy_s_f
 
     return loss
-
-
-def get_all_classes(data, feature):
-    classes = set()
-
-    for instance in data:
-        classes.add(instance)
 
 
 def build_tree(data, features):
@@ -84,7 +77,7 @@ def build_tree(data, features):
         return 0
 
     # check if all the targets are the same
-    targets = data[-1]
+    targets = [x[-1] for x in data]  # data[-1]
     test = np.full_like(targets, targets[0])
     if np.array_equal(targets, test):
         return targets[0]
@@ -110,17 +103,18 @@ def build_tree(data, features):
 
         # go with the smallest
         i_smallest = np.argmin(losses)
-        vals = [x[features[i_smallest]] for x in data]
+        desired_feature = features[i_smallest]
+        vals = [x[desired_feature] for x in data]
         all_values = set(vals)  # get all possible values of this feature
 
-        node.attr_index = features[i_smallest]
+        node.attr_index = desired_feature
 
         # get the data and recurse
         for value in all_values:
             # get the parameters ready to pass down
-            new_data = [x for x in data if x[features[i_smallest]] == value]
+            new_data = [x for x in data if x[desired_feature] == value]
             new_features = copy.deepcopy(features)
-            new_features.remove(features[i_smallest])
+            new_features.remove(desired_feature)
 
             # recurse down the subtree
             subtree = build_tree(new_data, new_features)
@@ -149,14 +143,16 @@ class DTreeClassifier:
 
         # zip the data and targets together
         targets = targets.reshape((-1, 1))
-
         datatargets = np.append(data, targets, axis=1)
 
+        # features are a list from 0 to the size of the list
         features = []
         for i in range(self.data.shape[1]):
             features.append(i)
 
         self.root = build_tree(datatargets, features)
+
+        self.output_tree(self.root, 0)
 
     def predict(self, data):
 
@@ -181,6 +177,23 @@ class DTreeClassifier:
             return self.traverse_tree(instance, branch)
         else:
             return node.branches[instance[node.attr_index]]
+
+    def output_tree(self, node, level):
+        # create tabs
+        tabs = ""
+        i = 0
+        while i < level:
+            tabs += "\t"
+            i += 1
+
+        if isinstance(node, ID3_Node):
+            print(tabs, "node attribute: ", node.attr_index)
+            print(tabs, "children: ")
+            for key, val in node.branches.items():
+                print(tabs, key, ": ")
+                self.output_tree(val, level + 1)
+        else:
+            print(tabs, node)
 
 
 class ID3_Node:
