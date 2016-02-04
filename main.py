@@ -2,8 +2,10 @@ import sys
 import time  # for a random seed
 import numpy as np
 from sklearn import datasets
+from sklearn import tree
 from hcClassifier import HcClassifier
 from knnClassifier import KnnClassifier
+from dtClassifier import DTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
 
@@ -80,8 +82,10 @@ def main(argv):
     ptargets = targets[tsize:tsize + psize]
 
     # train the classifier
-    classifier = KnnClassifier(3)
+    #classifier = KnnClassifier(3)
     #classifier = KNeighborsClassifier(n_neighbors=3)
+    classifier = DTreeClassifier()
+    #classifier = tree.DecisionTreeClassifier()
     classifier.fit(tdata, ttargets)
 
     # see how it did
