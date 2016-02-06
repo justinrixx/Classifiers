@@ -4,11 +4,16 @@ import numpy as np
 class Layer:
     """A layer of neural networks"""
 
-    def __init__(self, num_inputs, num_nodes):
+    def __init__(self, num_inputs, num_nodes, bias):
         self.data = []
         self.targets = []
         self.num_inputs = num_inputs
-        self.nodes = [Node(num_inputs) for i in range(num_nodes)]
+        self.bias = bias
+        #                 +1 for bias
+        self.nodes = [Node(num_inputs + 1) for i in range(num_nodes)]
+
+    def fit(self, data, targets):
+        self.train(data, targets)
 
     def train(self, data, targets):
         self.data = data
@@ -19,7 +24,8 @@ class Layer:
         outputs = []
 
         for i in range(len(self.nodes)):
-            outputs.append(self.nodes[i].get_output(data))
+            # get the output. append the bias as an input
+            outputs.append(self.nodes[i].get_output(np.append(data, [self.bias])))
 
         return outputs
 
@@ -35,7 +41,7 @@ class Node:
         total = 0
 
         # add up the weights
-        for i in range(inputs):
+        for i in range(len(inputs)):
             total += inputs[i] * self.weights[i]
 
         # the threshold is 0
