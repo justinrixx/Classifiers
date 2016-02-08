@@ -11,18 +11,11 @@ class Layer:
         self.means = []
         self.num_inputs = num_inputs
         self.bias = bias
-        #                 +1 for bias
-        self.nodes = [Node(num_inputs + 1) for i in range(num_nodes)]
+        self.nodes = []
 
-        # scale all the data using z-scores
-        for i in range(len(self.data[0])):
-            # save the standard deviation and meancol = self.data[:, i]
-            self.std_devs.append(np.std(self.data[:, i]))
-            self.means.append(np.mean(self.data[:, i]))
-
-            # scale the data
-            self.data[:, i] -= self.means[i]
-            self.data[:, i] /= self.std_devs[i]
+        # initialize the nodes
+        for i in range(num_nodes):
+            self.nodes.append(Node(num_inputs + 1))
 
     def fit(self, data, targets):
         self.train(data, targets)
@@ -30,6 +23,16 @@ class Layer:
     def train(self, data, targets):
         self.data = data
         self.targets = targets
+
+        # scale all the data using z-scores
+        for j in range(len(self.data[0])):
+            # save the standard deviation and meancol = self.data[:, i]
+            self.std_devs.append(np.std(self.data[:, j]))
+            self.means.append(np.mean(self.data[:, j]))
+
+            # scale the data
+            self.data[:, j] -= self.means[j]
+            self.data[:, j] /= self.std_devs[j]
 
     def predict(self, data):
 
