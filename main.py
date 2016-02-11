@@ -7,7 +7,7 @@ from hcClassifier import HcClassifier
 from knnClassifier import KnnClassifier
 from dtClassifier import DTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from layer import Layer
+from mlp import MLP
 
 
 def main(argv):
@@ -87,21 +87,20 @@ def main(argv):
     #classifier = KNeighborsClassifier(n_neighbors=3)
     #classifier = DTreeClassifier()
     #classifier = tree.DecisionTreeClassifier()
-    classifier = Layer(tdata.shape[1], 4, -1)
+    #classifier = Layer(tdata.shape[1], 4, -1)
+    classifier = MLP((3, 2))
     classifier.fit(tdata, ttargets)
 
-    for row in pdata:
-        print(classifier.predict(row))
     # see how it did
-    #numcorrect = 0
-    #predictions = classifier.predict(pdata)
-    #for i in range(psize):
-    #    if predictions[i] == ptargets[i]:
-    #        numcorrect += 1
+    numcorrect = 0
+    predictions = classifier.predict(pdata)
+    for i in range(psize):
+        if predictions[i] == ptargets[i]:
+            numcorrect += 1
 
-    #percentcorrect = (numcorrect / psize) * 100.0
+    percentcorrect = (numcorrect / psize) * 100.0
 
-    #print("Completed. Predicted", str(percentcorrect), "% correctly.")
+    print("Completed. Predicted", str(percentcorrect), "% correctly.")
 
 # This is here to ensure main is only called when
 #   this file is run, not just loaded
