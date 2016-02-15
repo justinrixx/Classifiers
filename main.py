@@ -87,8 +87,7 @@ def main(argv):
     #classifier = KNeighborsClassifier(n_neighbors=3)
     #classifier = DTreeClassifier()
     #classifier = tree.DecisionTreeClassifier()
-    #classifier = Layer(tdata.shape[1], 4, -1)
-    classifier = MLP((3, 2))
+    classifier = MLP((3, 3), .2, 30)
     classifier.fit(tdata, ttargets)
 
     # see how it did
